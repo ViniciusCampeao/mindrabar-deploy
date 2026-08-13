@@ -1,0 +1,12 @@
+# Arquivos e diretórios a serem ignorados pelo Docker
+node_modules
+npm-debug.log
+build
+.dockerignore
+.git
+.github
+.gitignore
+README.md
+.env
+.env.*
+dist

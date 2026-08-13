@@ -1,0 +1,15 @@
+# Ignora tudo na raiz
+/*
+
+# Mas inclui a pasta src
+!/src/
+
+# Ignora arquivos de build e dependências
+node_modules/
+dist/
+build/
+coverage/
+
+# Ignora arquivos de configuração específicos se desejar
+# package-lock.json
+# yarn.lock

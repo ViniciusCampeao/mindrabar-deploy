@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_BASEURL=${VITE_BASEURL:-http://localhost:8080}
+    ports:
+      - "80:80"
+    environment:
+      - API_URL=${VITE_BASEURL:-http://localhost:8080}
+    restart: unless-stopped
+    # Se você tiver um serviço backend, pode descomentar as linhas abaixo
+    # depends_on:
+    #   - backend
+  
+  # Exemplo de configuração para um serviço backend
+  # backend:
+  #   image: backend-image
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - DATABASE_URL=...
+  #   restart: unless-stopped

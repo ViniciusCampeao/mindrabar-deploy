@@ -1,0 +1,10 @@
+CREATE TABLE tables (
+    id SERIAL PRIMARY KEY,
+    company_id INTEGER NOT NULL,
+    "name" VARCHAR(20) NOT NULL,
+    "status" VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (company_id) REFERENCES companies(id)
+);
