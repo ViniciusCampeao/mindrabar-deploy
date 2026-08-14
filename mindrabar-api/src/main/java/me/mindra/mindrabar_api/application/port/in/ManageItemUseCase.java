@@ -3,6 +3,7 @@ package me.mindra.mindrabar_api.application.port.in;
 import java.math.BigDecimal;
 import java.util.List;
 
+import me.mindra.mindrabar_api.application.dto.customer.CustomerOrderItemRequestDTO;
 import me.mindra.mindrabar_api.application.dto.item.ItemCreateRequestDTO;
 import me.mindra.mindrabar_api.application.dto.item.ItemCreateResponseDTO;
 import me.mindra.mindrabar_api.application.dto.item.ItemQueueResponseDTO;
@@ -14,6 +15,7 @@ import me.mindra.mindrabar_api.domain.model.item.ItemStatus;
 public interface ManageItemUseCase {
 
     ItemCreateResponseDTO createItem(ItemCreateRequestDTO request);
+    ItemCreateResponseDTO createItemForSession(String sessionToken, CustomerOrderItemRequestDTO request);
     ItemStatusUpdateResponseDTO updateStatus(ItemStatusUpdateRequestDTO request);
     void deleteItem(Long itemId);
     ItemResponseDTO findItemById(Long itemId);

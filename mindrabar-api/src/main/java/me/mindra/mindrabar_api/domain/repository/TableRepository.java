@@ -12,6 +12,7 @@ public interface TableRepository {
     List<Table> findAll();
     Optional<Table> findById(Long id);
     Optional<Table> findByName(String name);
+    Optional<Table> findByQrToken(String qrToken);
     List<Table> findByStatus(TableStatus status);
     Table save(Table table);
     void deleteById(Long id);

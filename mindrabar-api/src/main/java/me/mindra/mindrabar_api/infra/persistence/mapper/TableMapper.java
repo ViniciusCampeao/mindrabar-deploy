@@ -11,9 +11,10 @@ public class TableMapper {
             CompanyMapper.toEntity(domain.getCompany()),
             domain.getName(),
             domain.getStatus(),
+            domain.getQrToken(),
             domain.getCreatedAt(),
             domain.getUpdatedAt()
-        ); 
+        );
     }
 
     public static Table toDomain(TableEntity entity) {
@@ -22,6 +23,7 @@ public class TableMapper {
             CompanyMapper.toDomain(entity.getCompany()),
             entity.getName(),
             entity.getStatus(),
+            entity.getQrToken(),
             entity.getCreatedAt(),
             entity.getUpdatedAt()
         );

@@ -63,6 +63,10 @@ public class TableService {
         return tableRepository.findByName(name).orElseThrow(() -> new MindrabarException(ErrorCode.TABLE_NOT_FOUND, "Mesa não encontrada"));
     }
 
+    public Table findByQrToken(String qrToken) {
+        return tableRepository.findByQrToken(qrToken).orElseThrow(() -> new MindrabarException(ErrorCode.TABLE_NOT_FOUND, "Mesa não encontrada"));
+    }
+
     public List<Table> findByStatus(TableStatus status) {
         List<Table> tables = tableRepository.findByStatus(status);
         if(tables.isEmpty()) {

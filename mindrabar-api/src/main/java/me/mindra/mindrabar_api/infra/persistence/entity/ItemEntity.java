@@ -29,6 +29,10 @@ public class ItemEntity {
     private UserEntity user;
 
     @ManyToOne
+    @JoinColumn(name = "table_session_id", referencedColumnName = "id")
+    private TableSessionEntity tableSession;
+
+    @ManyToOne
     @JoinColumn(name = "order_id", referencedColumnName = "id")
     private OrderEntity order;
 
@@ -55,10 +59,11 @@ public class ItemEntity {
     public ItemEntity() {
     }
 
-    public ItemEntity(Long id, UserEntity user, OrderEntity order, ProductEntity product, int quantity,
+    public ItemEntity(Long id, UserEntity user, TableSessionEntity tableSession, OrderEntity order, ProductEntity product, int quantity,
             int quantityPaid, ItemStatus status, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.user = user;
+        this.tableSession = tableSession;
         this.order = order;
         this.product = product;
         this.quantity = quantity;
@@ -90,6 +95,14 @@ public class ItemEntity {
 
     public void setUser(UserEntity user) {
         this.user = user;
+    }
+
+    public TableSessionEntity getTableSession() {
+        return tableSession;
+    }
+
+    public void setTableSession(TableSessionEntity tableSession) {
+        this.tableSession = tableSession;
     }
 
     public OrderEntity getOrder() {

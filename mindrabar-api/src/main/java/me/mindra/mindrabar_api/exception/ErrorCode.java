@@ -15,7 +15,9 @@ public enum ErrorCode {
     TABLE_NOT_FOUND(203, "Mesa não encontrada"),
     ORDER_NOT_FOUND(204, "Pedido não encontrado"),
     ITEM_NOT_FOUND(205, "Item não encontrado"),
-    
+    CUSTOMER_NOT_FOUND(206, "Cliente não encontrado"),
+    TABLE_SESSION_NOT_FOUND(207, "Sessão de mesa não encontrada"),
+
     // Erros de validação (3xx)
     INVALID_EMAIL(300, "Email inválido"),
     INVALID_USERNAME(301, "Username inválido"),
@@ -26,7 +28,8 @@ public enum ErrorCode {
     INVALID_PRICE(306, "Preço inválido"),
     INVALID_QUANTITY(307, "Quantidade inválida"),
     INVALID_CNPJ(308, "CNPJ inválido"),
-    
+    INVALID_PHONE(309, "Telefone inválido"),
+
     // Erros de negócio (4xx)
     INSUFFICIENT_STOCK(400, "Estoque insuficiente"),
     INVALID_STATUS_TRANSITION(401, "Transição de status inválida"),

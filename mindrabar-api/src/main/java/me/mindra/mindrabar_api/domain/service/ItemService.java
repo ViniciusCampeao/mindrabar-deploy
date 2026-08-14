@@ -23,8 +23,13 @@ public class ItemService {
         if (item == null) {
             throw new MindrabarException(ErrorCode.REQUIRED_FIELD, "Item não pode ser nulo");
         }
-        if (item.getUser() == null || item.getUser().getId() == null) {
-            throw new MindrabarException(ErrorCode.REQUIRED_FIELD, "Item deve pertencer a um Usuário existente");
+        boolean hasUser = item.getUser() != null && item.getUser().getId() != null;
+        boolean hasTableSession = item.getTableSession() != null && item.getTableSession().getId() != null;
+        if (!hasUser && !hasTableSession) {
+            throw new MindrabarException(ErrorCode.REQUIRED_FIELD, "Item deve pertencer a um Usuário ou a uma Sessão de cliente existente");
+        }
+        if (hasUser && hasTableSession) {
+            throw new MindrabarException(ErrorCode.BUSINESS_RULE_VIOLATION, "Item não pode pertencer a um usuário e a uma sessão de cliente ao mesmo tempo");
         }
         if (item.getOrder() == null || item.getOrder().getId() == null) {
             throw new MindrabarException(ErrorCode.REQUIRED_FIELD, "Item deve pertencer a um Pedido existente");
