@@ -107,18 +107,36 @@ export default function CustomerOrderPage() {
     }
   }, [qrToken]);
 
+  const handleSessionExpired = useCallback(() => {
+    if (qrToken) {
+      localStorage.removeItem(sessionStorageKey(qrToken));
+    }
+    setSessionToken(null);
+    setCustomerName(null);
+    setBill(null);
+    setSnackbar({
+      open: true,
+      message: 'Sua sessão foi encerrada (a mesa foi fechada). Preencha seus dados novamente para pedir.',
+      severity: 'error',
+    });
+  }, [qrToken]);
+
   const loadBill = useCallback(async () => {
     if (!sessionToken) return;
     try {
       setBillLoading(true);
       const data = await customerOrderService.getBill(sessionToken);
       setBill(data);
-    } catch {
+    } catch (error: any) {
+      if (error?.response?.data?.code === 'INVALID_STATUS_TRANSITION') {
+        handleSessionExpired();
+        return;
+      }
       setSnackbar({ open: true, message: 'Não foi possível carregar a conta.', severity: 'error' });
     } finally {
       setBillLoading(false);
     }
-  }, [sessionToken]);
+  }, [sessionToken, handleSessionExpired]);
 
   useEffect(() => {
     if (sessionToken) {
@@ -176,6 +194,10 @@ export default function CustomerOrderPage() {
       setSnackbar({ open: true, message: `${product.name} adicionado ao pedido.`, severity: 'success' });
       setQuantities(prev => ({ ...prev, [product.id]: 1 }));
     } catch (error: any) {
+      if (error?.response?.data?.code === 'INVALID_STATUS_TRANSITION') {
+        handleSessionExpired();
+        return;
+      }
       const message = error?.response?.data?.message || 'Não foi possível adicionar este item.';
       setSnackbar({ open: true, message, severity: 'error' });
     }

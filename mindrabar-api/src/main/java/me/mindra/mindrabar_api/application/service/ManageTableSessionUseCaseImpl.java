@@ -14,6 +14,7 @@ import me.mindra.mindrabar_api.application.dto.product.ProductResponseDTO;
 import me.mindra.mindrabar_api.application.port.in.ManageTableSessionUseCase;
 import me.mindra.mindrabar_api.domain.model.customer.Customer;
 import me.mindra.mindrabar_api.domain.model.customer.TableSession;
+import me.mindra.mindrabar_api.domain.model.customer.TableSessionStatus;
 import me.mindra.mindrabar_api.domain.model.item.Item;
 import me.mindra.mindrabar_api.domain.model.order.Order;
 import me.mindra.mindrabar_api.domain.model.order.OrderStatus;
@@ -125,6 +126,9 @@ public class ManageTableSessionUseCaseImpl implements ManageTableSessionUseCase 
     @Override
     public BillResponseDTO getBillBySessionToken(String sessionToken) {
         TableSession session = tableSessionService.findByToken(sessionToken);
+        if (session.getStatus() == TableSessionStatus.CLOSED) {
+            throw new MindrabarException(ErrorCode.INVALID_STATUS_TRANSITION, "Sessão encerrada, conta não está mais disponível");
+        }
         return buildBill(session.getTable());
     }
 
