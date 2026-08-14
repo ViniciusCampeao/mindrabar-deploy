@@ -38,6 +38,7 @@ import TablesService from "../../../services/Tables/tablesService";
 import { itemService } from "../../../api/items";
 import { ItemStatus } from "../../../types/item";
 import { httpClient } from "../../../api/httpClient";
+import { tableSessionService } from "../../../api/customer";
 import { PRINT } from "../../../api/endpoints";
 // Importe inline para contornar o problema
 const formatCurrency = (value: number): string => {
@@ -315,7 +316,14 @@ const OrderList = ({
       // Fechar cada pedido individualmente
       const closePromises = openOrders.map(order => OrdersService.closeOrder(order.id));
       await Promise.all(closePromises);
-      
+
+      // Encerrar também as sessões de clientes (QR Code) abertas nesta mesa
+      try {
+        await tableSessionService.closeByTable(table.id);
+      } catch (sessionError) {
+        console.error("Erro ao encerrar sessões de QR Code da mesa:", sessionError);
+      }
+
       setErrorMessage("");
       setShowError(false);
       

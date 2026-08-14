@@ -9,6 +9,7 @@ public record TableResponseDTO(
     String name,
     TableStatus status,
     Long companyId,
+    String qrToken,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {

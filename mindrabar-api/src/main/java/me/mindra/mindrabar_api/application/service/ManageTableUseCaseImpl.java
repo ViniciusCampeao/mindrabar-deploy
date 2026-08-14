@@ -100,6 +100,7 @@ public class ManageTableUseCaseImpl implements ManageTableUseCase {
             table.getName(),
             table.getStatus(),
             table.getCompany().getId(),
+            table.getQrToken(),
             table.getCreatedAt(),
             table.getUpdatedAt()
         );

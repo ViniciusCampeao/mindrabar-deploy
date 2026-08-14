@@ -14,6 +14,7 @@ interface TableApiResponse {
   name: string;
   status: TableStatus;
   companyId: number;
+  qrToken?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -122,6 +123,7 @@ const TablesService = {
       totalItems: 0, // Precisará ser preenchido separadamente
       totalValue: 0, // Precisará ser preenchido separadamente
       totalAmount: 0, // Precisará ser preenchido separadamente
+      qrToken: table.qrToken,
     }));
   },
 

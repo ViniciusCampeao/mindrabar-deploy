@@ -16,6 +16,8 @@ import WaiterOrders from "./pages/WaiterOrders/Index";
 import SalesPage from "./pages/Sales";
 import QueuePage from "./pages/Queue";
 import UserManagement from "./pages/UserManagement";
+import QrOrdersPage from "./pages/QrOrders/Index";
+import CustomerOrderPage from "./pages/CustomerOrder/Index";
 import { MenuPage } from "./modules/menu";
 import { OrdersPage } from "./modules/orders";
 import "./App.css";
@@ -30,6 +32,7 @@ function App() {
           sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
         >
           <Routes>
+            <Route path="/mesa/:qrToken" element={<CustomerOrderPage />} />
             <Route
               path="/login"
               element={
@@ -144,6 +147,16 @@ function App() {
                 <ProtectedRoute allowedRoles={["MANAGER"]}>
                   <MainLayout>
                     <UserManagement />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/qr-orders"
+              element={
+                <ProtectedRoute allowedRoles={["MANAGER", "WAITER"]}>
+                  <MainLayout>
+                    <QrOrdersPage />
                   </MainLayout>
                 </ProtectedRoute>
               }
