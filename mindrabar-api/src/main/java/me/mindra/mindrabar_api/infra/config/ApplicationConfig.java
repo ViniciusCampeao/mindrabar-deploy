@@ -8,6 +8,7 @@ import me.mindra.mindrabar_api.application.port.in.AuthenticateUserUseCase;
 import me.mindra.mindrabar_api.application.port.in.ManageCompanyUseCase;
 import me.mindra.mindrabar_api.application.port.in.ManageItemUseCase;
 import me.mindra.mindrabar_api.application.port.in.ManageOrderUseCase;
+import me.mindra.mindrabar_api.application.port.in.ManageProductCategoryUseCase;
 import me.mindra.mindrabar_api.application.port.in.ManageProductUseCase;
 import me.mindra.mindrabar_api.application.port.in.ManageTableSessionUseCase;
 import me.mindra.mindrabar_api.application.port.in.ManageTableUseCase;
@@ -17,6 +18,7 @@ import me.mindra.mindrabar_api.application.port.out.UserAuthPort;
 import me.mindra.mindrabar_api.application.service.ManageCompanyUseCaseImpl;
 import me.mindra.mindrabar_api.application.service.ManageItemUseCaseImpl;
 import me.mindra.mindrabar_api.application.service.ManageOrderUseCaseImpl;
+import me.mindra.mindrabar_api.application.service.ManageProductCategoryUseCaseImpl;
 import me.mindra.mindrabar_api.application.service.ManageProductUseCaseImpl;
 import me.mindra.mindrabar_api.application.service.ManageTableSessionUseCaseImpl;
 import me.mindra.mindrabar_api.application.service.ManageTableUseCaseImpl;
@@ -26,6 +28,7 @@ import me.mindra.mindrabar_api.domain.repository.CompanyRepository;
 import me.mindra.mindrabar_api.domain.repository.CustomerRepository;
 import me.mindra.mindrabar_api.domain.repository.ItemRepository;
 import me.mindra.mindrabar_api.domain.repository.OrderRepository;
+import me.mindra.mindrabar_api.domain.repository.ProductCategoryRepository;
 import me.mindra.mindrabar_api.domain.repository.ProductRepository;
 import me.mindra.mindrabar_api.domain.repository.TableRepository;
 import me.mindra.mindrabar_api.domain.repository.TableSessionRepository;
@@ -34,6 +37,7 @@ import me.mindra.mindrabar_api.domain.service.CompanyService;
 import me.mindra.mindrabar_api.domain.service.CustomerService;
 import me.mindra.mindrabar_api.domain.service.ItemService;
 import me.mindra.mindrabar_api.domain.service.OrderService;
+import me.mindra.mindrabar_api.domain.service.ProductCategoryService;
 import me.mindra.mindrabar_api.domain.service.ProductService;
 import me.mindra.mindrabar_api.domain.service.TableService;
 import me.mindra.mindrabar_api.domain.service.TableSessionService;
@@ -45,6 +49,7 @@ public class ApplicationConfig {
     private final CompanyRepository companyRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final ProductCategoryRepository productCategoryRepository;
     private final TableRepository tableRepository;
     private final OrderRepository orderRepository;
     private final ItemRepository itemRepository;
@@ -52,13 +57,14 @@ public class ApplicationConfig {
     private final TableSessionRepository tableSessionRepository;
 
     public ApplicationConfig(CompanyRepository companyRepository, UserRepository userRepository,
-        ProductRepository productRepository, TableRepository tableRepository,
+        ProductRepository productRepository, ProductCategoryRepository productCategoryRepository, TableRepository tableRepository,
         OrderRepository orderRepository, ItemRepository itemRepository,
         CustomerRepository customerRepository, TableSessionRepository tableSessionRepository) {
 
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
+        this.productCategoryRepository = productCategoryRepository;
         this.tableRepository = tableRepository;
         this.orderRepository = orderRepository;
         this.itemRepository = itemRepository;
@@ -79,6 +85,11 @@ public class ApplicationConfig {
     @Bean
     public ProductService productService() {
         return new ProductService(productRepository);
+    }
+
+    @Bean
+    public ProductCategoryService productCategoryService() {
+        return new ProductCategoryService(productCategoryRepository);
     }
 
     @Bean
@@ -124,7 +135,12 @@ public class ApplicationConfig {
 
     @Bean
     public ManageProductUseCase manageProductUseCase() {
-        return new ManageProductUseCaseImpl(productService(), companyService());
+        return new ManageProductUseCaseImpl(productService(), companyService(), productCategoryService());
+    }
+
+    @Bean
+    public ManageProductCategoryUseCase manageProductCategoryUseCase() {
+        return new ManageProductCategoryUseCaseImpl(productCategoryService(), companyService());
     }
 
     @Bean

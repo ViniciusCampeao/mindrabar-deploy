@@ -10,6 +10,7 @@ import me.mindra.mindrabar_api.application.dto.item.ItemQueueResponseDTO;
 import me.mindra.mindrabar_api.application.dto.item.ItemResponseDTO;
 import me.mindra.mindrabar_api.application.dto.item.ItemStatusUpdateRequestDTO;
 import me.mindra.mindrabar_api.application.dto.item.ItemStatusUpdateResponseDTO;
+import me.mindra.mindrabar_api.application.dto.item.SessionItemStatusDTO;
 import me.mindra.mindrabar_api.domain.model.item.ItemStatus;
 
 public interface ManageItemUseCase {
@@ -25,4 +26,5 @@ public interface ManageItemUseCase {
     List<ItemResponseDTO> findItemsByProduct(Long productId);
     List<ItemQueueResponseDTO> findItemByStatusAndCompanyId(ItemStatus status, Long companyId);
     BigDecimal getTotalAmount(Long orderId);
+    List<SessionItemStatusDTO> findItemsBySession(String sessionToken);
 }

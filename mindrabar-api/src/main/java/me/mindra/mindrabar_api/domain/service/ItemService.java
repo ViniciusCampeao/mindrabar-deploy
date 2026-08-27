@@ -2,6 +2,7 @@ package me.mindra.mindrabar_api.domain.service;
 
 import java.util.List;
 
+import me.mindra.mindrabar_api.domain.model.customer.TableSession;
 import me.mindra.mindrabar_api.domain.model.item.Item;
 import me.mindra.mindrabar_api.domain.model.item.ItemStatus;
 import me.mindra.mindrabar_api.domain.model.order.Order;
@@ -140,5 +141,12 @@ public class ItemService {
             throw new MindrabarException(ErrorCode.ITEM_NOT_FOUND, "Nenhum item encontrado para este produto");
         }
         return items;
+    }
+
+    public List<Item> findByTableSession(TableSession session) {
+        if (session == null || session.getId() == null) {
+            throw new MindrabarException(ErrorCode.REQUIRED_FIELD, "Sessão de cliente não pode ser nula");
+        }
+        return itemRepository.findByTableSessionId(session.getId());
     }
 }

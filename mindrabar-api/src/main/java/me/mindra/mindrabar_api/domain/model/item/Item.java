@@ -159,6 +159,7 @@ public class Item {
             throw new MindrabarException(ErrorCode.REQUIRED_FIELD, "Status do item não pode ser nulo");
         }
         this.status = status;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public void addPayment(int quantityToAdd) {

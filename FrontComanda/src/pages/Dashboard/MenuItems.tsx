@@ -20,8 +20,9 @@ import SortIcon from "@mui/icons-material/Sort";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef } from "@mui/x-data-grid";
-import type { MenuItem } from "../../types/dashboard";
+import type { MenuItem, ProductCategory } from "../../types/dashboard";
 import MenuItemsService from "../../services/MenuItems";
+import ProductCategoriesService from "../../services/ProductCategories";
 
 export default function MenuItems() {
   const [items, setItems] = React.useState([]);
@@ -37,7 +38,9 @@ export default function MenuItems() {
     price: "0",
     costPrice: "0",
     stockQuantity: "0",
+    categoryId: "",
   });
+  const [categories, setCategories] = React.useState<ProductCategory[]>([]);
 
   // Definindo a função fetchItems
   const fetchItems = async () => {
@@ -52,8 +55,18 @@ export default function MenuItems() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const data = await ProductCategoriesService.getAll();
+      setCategories(data);
+    } catch (error) {
+      console.error("Erro ao carregar categorias:", error);
+    }
+  };
+
   React.useEffect(() => {
     fetchItems();
+    fetchCategories();
   }, []);
   
   // Função auxiliar para ordenação natural (considera números corretamente)
@@ -131,6 +144,7 @@ export default function MenuItems() {
           item.stockQuantity !== undefined
             ? item.stockQuantity.toString()
             : "0",
+        categoryId: item.categoryId != null ? item.categoryId.toString() : "",
       });
     } else {
       setEditItem(null);
@@ -139,6 +153,7 @@ export default function MenuItems() {
         price: "0",
         costPrice: "0",
         stockQuantity: "0",
+        categoryId: "",
       });
     }
     setOpen(true);
@@ -152,6 +167,7 @@ export default function MenuItems() {
       price: "0",
       costPrice: "0",
       stockQuantity: "0",
+      categoryId: "",
     });
   };
 
@@ -162,6 +178,7 @@ export default function MenuItems() {
       const salePrice = parseFloat(formData.price.replace(",", ".")) || 0;
       const costPrice = parseFloat(formData.costPrice.replace(",", ".")) || 0;
       const stockQuantity = parseInt(formData.stockQuantity) || 0;
+      const categoryId = formData.categoryId ? Number(formData.categoryId) : null;
 
       if (editItem) {
         // Atualiza o preço de venda
@@ -188,14 +205,24 @@ export default function MenuItems() {
             );
           }
         }
+
+        // Se a categoria tiver mudado, atualiza a categoria
+        if ((editItem.categoryId ?? null) !== categoryId) {
+          await MenuItemsService.assignCategory(editItem.id, categoryId);
+        }
       } else {
         // Cria um novo produto
-        await MenuItemsService.createMenuItem({
+        const created = await MenuItemsService.createMenuItem({
           name: formData.name,
           salePrice,
           costPrice,
           stockQuantity,
         });
+
+        // Se uma categoria foi escolhida, atribui em seguida
+        if (categoryId != null) {
+          await MenuItemsService.assignCategory(created.id, categoryId);
+        }
       }
 
       await fetchItems();
@@ -284,6 +311,13 @@ export default function MenuItems() {
       },
       headerAlign: "right",
       align: "right",
+    },
+    {
+      field: "categoryName",
+      headerName: "Categoria",
+      minWidth: 140,
+      flex: 1,
+      renderCell: params => params.row.categoryName || "Sem categoria",
     },
     {
       field: "actions",
@@ -585,7 +619,29 @@ export default function MenuItems() {
             InputProps={{
               sx: { borderRadius: 1.5 },
             }}
+            sx={{ mb: 2 }}
           />
+          <FormControl fullWidth margin="dense">
+            <InputLabel id="category-select-label">Categoria</InputLabel>
+            <Select
+              labelId="category-select-label"
+              label="Categoria"
+              value={formData.categoryId}
+              onChange={e =>
+                setFormData({ ...formData, categoryId: e.target.value as string })
+              }
+              sx={{ borderRadius: 1.5 }}
+            >
+              <MuiMenuItem value="">
+                <em>Sem categoria</em>
+              </MuiMenuItem>
+              {categories.map(category => (
+                <MuiMenuItem key={category.id} value={category.id.toString()}>
+                  {category.name}
+                </MuiMenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions
           sx={{

@@ -9,6 +9,8 @@ interface ProductApiResponse {
   costPrice: number;
   salePrice: number;
   stockQuantity: number;
+  categoryId?: number | null;
+  categoryName?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -31,8 +33,43 @@ interface UpdatePriceRequest {
   price: number;
 }
 
+interface UpdateCategoryRequest {
+  categoryId: number | null;
+}
+
 // Constante para o companyId fixo
 const COMPANY_ID = 1;
+
+// Converte a resposta bruta da API para o formato usado na UI
+function toMenuItem(product: ProductApiResponse): MenuItem {
+  let salePrice = 0;
+  if (product.salePrice !== undefined && product.salePrice !== null) {
+    salePrice = Number(product.salePrice);
+    if (isNaN(salePrice)) salePrice = 0;
+  }
+
+  let costPrice = 0;
+  if (product.costPrice !== undefined && product.costPrice !== null) {
+    costPrice = Number(product.costPrice);
+    if (isNaN(costPrice)) costPrice = 0;
+  }
+
+  let stockQuantity = 0;
+  if (product.stockQuantity !== undefined && product.stockQuantity !== null) {
+    stockQuantity = Number(product.stockQuantity);
+    if (isNaN(stockQuantity)) stockQuantity = 0;
+  }
+
+  return {
+    id: product.id,
+    name: product.name || "Sem nome",
+    price: salePrice,
+    costPrice: costPrice,
+    stockQuantity: stockQuantity,
+    categoryId: product.categoryId ?? null,
+    categoryName: product.categoryName ?? null,
+  };
+}
 
 // Serviço para gerenciar produtos (itens do menu)
 const MenuItemsService = {
@@ -49,39 +86,7 @@ const MenuItemsService = {
         return [];
       }
 
-      const items = response.data.map(product => {
-        // Verificação detalhada dos valores
-        let salePrice = 0;
-        if (product.salePrice !== undefined && product.salePrice !== null) {
-          salePrice = Number(product.salePrice);
-          if (isNaN(salePrice)) salePrice = 0;
-        }
-
-        let costPrice = 0;
-        if (product.costPrice !== undefined && product.costPrice !== null) {
-          costPrice = Number(product.costPrice);
-          if (isNaN(costPrice)) costPrice = 0;
-        }
-
-        let stockQuantity = 0;
-        if (
-          product.stockQuantity !== undefined &&
-          product.stockQuantity !== null
-        ) {
-          stockQuantity = Number(product.stockQuantity);
-          if (isNaN(stockQuantity)) stockQuantity = 0;
-        }
-
-        return {
-          id: product.id,
-          name: product.name || "Sem nome",
-          price: salePrice,
-          costPrice: costPrice,
-          stockQuantity: stockQuantity,
-        };
-      });
-
-      return items;
+      return response.data.map(toMenuItem);
     } catch (error) {
       console.error("Erro ao buscar produtos:", error);
       return [];
@@ -91,18 +96,7 @@ const MenuItemsService = {
   // Busca um produto pelo ID
   getMenuItemById: async (itemId: number): Promise<MenuItem> => {
     const response = await api.get<ProductApiResponse>(`/product/${itemId}`);
-
-    const salePrice = Number(response.data.salePrice) || 0;
-    const costPrice = Number(response.data.costPrice) || 0;
-    const stockQuantity = Number(response.data.stockQuantity) || 0;
-
-    return {
-      id: response.data.id,
-      name: response.data.name || "Sem nome",
-      price: salePrice,
-      costPrice: costPrice,
-      stockQuantity: stockQuantity,
-    };
+    return toMenuItem(response.data);
   },
 
   // Busca produto por nome
@@ -111,19 +105,7 @@ const MenuItemsService = {
       `/product/name/${name}`
     );
 
-    return response.data.map(product => {
-      const salePrice = Number(product.salePrice) || 0;
-      const costPrice = Number(product.costPrice) || 0;
-      const stockQuantity = Number(product.stockQuantity) || 0;
-
-      return {
-        id: product.id,
-        name: product.name || "Sem nome",
-        price: salePrice,
-        costPrice: costPrice,
-        stockQuantity: stockQuantity,
-      };
-    });
+    return response.data.map(toMenuItem);
   },
 
   // Cria um novo produto
@@ -143,18 +125,7 @@ const MenuItemsService = {
     };
 
     const response = await api.post<ProductApiResponse>(`/product`, payload);
-
-    const salePrice = Number(response.data.salePrice) || 0;
-    const costPrice = Number(response.data.costPrice) || 0;
-    const stockQuantity = Number(response.data.stockQuantity) || 0;
-
-    return {
-      id: response.data.id,
-      name: response.data.name || "Sem nome",
-      price: salePrice,
-      costPrice: costPrice,
-      stockQuantity: stockQuantity,
-    };
+    return toMenuItem(response.data);
   },
 
   // Atualiza o preço de venda de um produto
@@ -168,18 +139,7 @@ const MenuItemsService = {
       `/product/${id}/price/sale`,
       payload
     );
-
-    const salePrice = Number(response.data.salePrice) || 0;
-    const costPrice = Number(response.data.costPrice) || 0;
-    const stockQuantity = Number(response.data.stockQuantity) || 0;
-
-    return {
-      id: response.data.id,
-      name: response.data.name || "Sem nome",
-      price: salePrice,
-      costPrice: costPrice,
-      stockQuantity: stockQuantity,
-    };
+    return toMenuItem(response.data);
   },
 
   // Atualiza o preço de custo de um produto
@@ -196,18 +156,7 @@ const MenuItemsService = {
       `/product/${id}/price/cost`,
       payload
     );
-
-    const salePrice = Number(response.data.salePrice) || 0;
-    const costPrice = Number(response.data.costPrice) || 0;
-    const stockQuantity = Number(response.data.stockQuantity) || 0;
-
-    return {
-      id: response.data.id,
-      name: response.data.name || "Sem nome",
-      price: salePrice,
-      costPrice: costPrice,
-      stockQuantity: stockQuantity,
-    };
+    return toMenuItem(response.data);
   },
 
   // Adiciona estoque a um produto
@@ -221,18 +170,7 @@ const MenuItemsService = {
       `/product/${id}/stock/add`,
       payload
     );
-
-    const salePrice = Number(response.data.salePrice) || 0;
-    const costPrice = Number(response.data.costPrice) || 0;
-    const stockQuantity = Number(response.data.stockQuantity) || 0;
-
-    return {
-      id: response.data.id,
-      name: response.data.name || "Sem nome",
-      price: salePrice,
-      costPrice: costPrice,
-      stockQuantity: stockQuantity,
-    };
+    return toMenuItem(response.data);
   },
 
   // Remove estoque de um produto
@@ -249,18 +187,17 @@ const MenuItemsService = {
       `/product/${id}/stock/remove`,
       payload
     );
+    return toMenuItem(response.data);
+  },
 
-    const salePrice = Number(response.data.salePrice) || 0;
-    const costPrice = Number(response.data.costPrice) || 0;
-    const stockQuantity = Number(response.data.stockQuantity) || 0;
-
-    return {
-      id: response.data.id,
-      name: response.data.name || "Sem nome",
-      price: salePrice,
-      costPrice: costPrice,
-      stockQuantity: stockQuantity,
-    };
+  // Atribui (ou remove, com categoryId null) a categoria de um produto
+  assignCategory: async (id: number, categoryId: number | null): Promise<MenuItem> => {
+    const payload: UpdateCategoryRequest = { categoryId };
+    const response = await api.patch<ProductApiResponse>(
+      `/product/${id}/category`,
+      payload
+    );
+    return toMenuItem(response.data);
   },
 
   // Exclui um produto

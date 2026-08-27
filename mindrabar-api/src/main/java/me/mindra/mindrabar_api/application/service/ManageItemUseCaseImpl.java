@@ -10,6 +10,7 @@ import me.mindra.mindrabar_api.application.dto.item.ItemQueueResponseDTO;
 import me.mindra.mindrabar_api.application.dto.item.ItemResponseDTO;
 import me.mindra.mindrabar_api.application.dto.item.ItemStatusUpdateRequestDTO;
 import me.mindra.mindrabar_api.application.dto.item.ItemStatusUpdateResponseDTO;
+import me.mindra.mindrabar_api.application.dto.item.SessionItemStatusDTO;
 import me.mindra.mindrabar_api.exception.ErrorCode;
 import me.mindra.mindrabar_api.exception.MindrabarException;
 import me.mindra.mindrabar_api.application.port.in.ManageItemUseCase;
@@ -172,6 +173,23 @@ public class ManageItemUseCaseImpl implements ManageItemUseCase {
         List<Item> items = itemService.findByStatusAndCompanyId(status, companyId);
         return items.stream()
                 .map(ItemQueueResponseDTO::new)
+                .toList();
+    }
+
+    @Override
+    public List<SessionItemStatusDTO> findItemsBySession(String sessionToken) {
+        TableSession session = tableSessionService.findByToken(sessionToken);
+        List<Item> items = itemService.findByTableSession(session);
+        return items.stream()
+                .sorted((a, b) -> a.getCreatedAt().compareTo(b.getCreatedAt()))
+                .map(item -> new SessionItemStatusDTO(
+                    item.getId(),
+                    item.getProduct().getName(),
+                    item.getQuantity(),
+                    item.getStatus().name(),
+                    item.getCreatedAt(),
+                    item.getUpdatedAt()
+                ))
                 .toList();
     }
 }

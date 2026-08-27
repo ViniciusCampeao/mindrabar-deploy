@@ -3,6 +3,7 @@ package me.mindra.mindrabar_api.application.port.in;
 import java.math.BigDecimal;
 import java.util.List;
 
+import me.mindra.mindrabar_api.application.dto.product.ProductCategoryAssignRequestDTO;
 import me.mindra.mindrabar_api.application.dto.product.ProductCreateRequestDTO;
 import me.mindra.mindrabar_api.application.dto.product.ProductCreateResponseDTO;
 import me.mindra.mindrabar_api.application.dto.product.ProductPriceUpdateRequestDTO;
@@ -17,6 +18,7 @@ public interface ManageProductUseCase {
     ProductStockUpdateResponseDTO removeStock(ProductStockUpdateRequestDTO request);
     ProductPriceUpdateResponseDTO  updateCostPrice(ProductPriceUpdateRequestDTO request);
     ProductPriceUpdateResponseDTO  updateSalePrice(ProductPriceUpdateRequestDTO request);
+    ProductResponseDTO updateCategory(Long productId, ProductCategoryAssignRequestDTO request);
     void deleteProduct(Long productId);
 
     ProductResponseDTO findProductById(Long productId);

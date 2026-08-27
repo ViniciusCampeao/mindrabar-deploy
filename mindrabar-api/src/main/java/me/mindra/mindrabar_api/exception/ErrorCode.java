@@ -17,6 +17,7 @@ public enum ErrorCode {
     ITEM_NOT_FOUND(205, "Item não encontrado"),
     CUSTOMER_NOT_FOUND(206, "Cliente não encontrado"),
     TABLE_SESSION_NOT_FOUND(207, "Sessão de mesa não encontrada"),
+    PRODUCT_CATEGORY_NOT_FOUND(208, "Categoria de produto não encontrada"),
 
     // Erros de validação (3xx)
     INVALID_EMAIL(300, "Email inválido"),

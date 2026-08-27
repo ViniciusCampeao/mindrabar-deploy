@@ -3,6 +3,7 @@ package me.mindra.mindrabar_api.application.service;
 import java.math.BigDecimal;
 import java.util.List;
 
+import me.mindra.mindrabar_api.application.dto.product.ProductCategoryAssignRequestDTO;
 import me.mindra.mindrabar_api.application.dto.product.ProductCreateRequestDTO;
 import me.mindra.mindrabar_api.application.dto.product.ProductCreateResponseDTO;
 import me.mindra.mindrabar_api.application.dto.product.ProductPriceUpdateRequestDTO;
@@ -13,17 +14,21 @@ import me.mindra.mindrabar_api.application.dto.product.ProductStockUpdateRespons
 import me.mindra.mindrabar_api.application.port.in.ManageProductUseCase;
 import me.mindra.mindrabar_api.domain.model.company.Company;
 import me.mindra.mindrabar_api.domain.model.product.Product;
+import me.mindra.mindrabar_api.domain.model.product.ProductCategory;
 import me.mindra.mindrabar_api.domain.service.CompanyService;
+import me.mindra.mindrabar_api.domain.service.ProductCategoryService;
 import me.mindra.mindrabar_api.domain.service.ProductService;
 
 public class ManageProductUseCaseImpl implements ManageProductUseCase {
 
     private final ProductService productService;
     private final CompanyService companyService;
+    private final ProductCategoryService productCategoryService;
 
-    public ManageProductUseCaseImpl(ProductService productService, CompanyService companyService) {
+    public ManageProductUseCaseImpl(ProductService productService, CompanyService companyService, ProductCategoryService productCategoryService) {
         this.productService = productService;
         this.companyService = companyService;
+        this.productCategoryService = productCategoryService;
     }
 
     @Override
@@ -59,6 +64,13 @@ public class ManageProductUseCaseImpl implements ManageProductUseCase {
         
         Product product = productService.updateSalePrice(request.productId(), request.price());
         return new ProductPriceUpdateResponseDTO(product.getId(), product.getSalePrice());
+    }
+
+    @Override
+    public ProductResponseDTO updateCategory(Long productId, ProductCategoryAssignRequestDTO request) {
+        ProductCategory category = request.categoryId() != null ? productCategoryService.findById(request.categoryId()) : null;
+        Product product = productService.updateCategory(productId, category);
+        return toDto(product);
     }
 
     @Override
@@ -110,7 +122,9 @@ public class ManageProductUseCaseImpl implements ManageProductUseCase {
             product.getName(),
             product.getCostPrice(),
             product.getSalePrice(),
-            product.getStockQuantity()
+            product.getStockQuantity(),
+            product.getCategory() != null ? product.getCategory().getId() : null,
+            product.getCategory() != null ? product.getCategory().getName() : null
         );
     }
 

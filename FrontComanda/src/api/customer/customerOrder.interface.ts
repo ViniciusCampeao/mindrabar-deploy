@@ -16,6 +16,8 @@ export interface PublicMenuProduct {
   costPrice: number;
   salePrice: number;
   stockQuantity: number;
+  categoryId: number | null;
+  categoryName: string | null;
 }
 
 export interface StartSessionRequest {
@@ -64,4 +66,15 @@ export interface BillResponse {
   items: BillItem[];
   totalAmount: number;
   amountPending: number;
+}
+
+export type SessionItemOrderStatus = 'PENDING' | 'PREPARING' | 'DELIVERED' | 'CANCELLED';
+
+export interface SessionItemStatus {
+  itemId: number;
+  productName: string;
+  quantity: number;
+  status: SessionItemOrderStatus;
+  createdAt: string;
+  updatedAt: string;
 }

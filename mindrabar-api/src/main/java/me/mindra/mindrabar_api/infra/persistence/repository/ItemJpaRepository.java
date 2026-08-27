@@ -19,4 +19,5 @@ public interface ItemJpaRepository extends JpaRepository<ItemEntity, Long> {
     Optional<ItemEntity> findByOrderAndProduct(OrderEntity order, ProductEntity product);
     List<ItemEntity> findByOrder_Table_Company_Id(Long companyId);
     List<ItemEntity> findByProductId(Long productId);
+    List<ItemEntity> findByTableSession_Id(Long tableSessionId);
 }

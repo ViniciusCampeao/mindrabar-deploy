@@ -3,6 +3,7 @@ import { Box, Tab, Tabs } from "@mui/material";
 import TableManagement from "./Tables";
 import MenuItems from "./MenuItems";
 import TableSummary from "./TableSummary";
+import ProductCategories from "./ProductCategories";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -47,6 +48,7 @@ export default function Dashboard() {
             <Tab label="Gerenciar Mesas" />
             <Tab label="Gerenciar Itens" />
             <Tab label="Resumo de Mesas" />
+            <Tab label="Categorias" />
           </Tabs>
         </Box>
         <TabPanel value={value} index={0}>
@@ -57,6 +59,9 @@ export default function Dashboard() {
         </TabPanel>
         <TabPanel value={value} index={2}>
           <TableSummary />
+        </TabPanel>
+        <TabPanel value={value} index={3}>
+          <ProductCategories />
         </TabPanel>
       </Paper>
     </Container>

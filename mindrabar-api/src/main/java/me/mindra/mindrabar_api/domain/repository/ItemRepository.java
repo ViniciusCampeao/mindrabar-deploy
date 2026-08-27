@@ -20,4 +20,5 @@ public interface ItemRepository {
     Item save(Item item);
     void deleteById(Long id);
     List<Item> findByProductId(Long productId);
+    List<Item> findByTableSessionId(Long tableSessionId);
 }
