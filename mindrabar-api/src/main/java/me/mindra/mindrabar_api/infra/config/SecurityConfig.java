@@ -50,6 +50,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 
                 .requestMatchers("/auth/login").permitAll()
+                .requestMatchers("/public/**").permitAll()
+                .requestMatchers("/table-session/**").hasAnyRole("ADMIN", "MANAGER", "WAITER")
                 .requestMatchers(HttpMethod.POST, "/print").authenticated()
                 .requestMatchers("/user/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers(HttpMethod.GET, "/company/details").hasAnyRole("ADMIN", "MANAGER")

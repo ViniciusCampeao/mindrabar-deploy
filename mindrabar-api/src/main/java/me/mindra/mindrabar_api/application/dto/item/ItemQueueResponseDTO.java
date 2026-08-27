@@ -20,7 +20,9 @@ public record ItemQueueResponseDTO(
             item.getId(),
             item.getOrder() != null ? item.getOrder().getId() : null,
             item.getOrder() != null && item.getOrder().getTable() != null ? item.getOrder().getTable().getName() : "Mesa não definida",
-            item.getUser() != null ? item.getUser().getUsername() : "Usuário não definido",
+            item.getUser() != null
+                ? item.getUser().getUsername()
+                : (item.getTableSession() != null ? item.getTableSession().getCustomer().getName() + " (QR)" : "Usuário não definido"),
             item.getProduct() != null ? item.getProduct().getName() : "Produto não definido",
             item.getQuantity(),
             item.getStatus(),

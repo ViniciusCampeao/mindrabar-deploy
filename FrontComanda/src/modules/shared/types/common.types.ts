@@ -11,6 +11,7 @@ export interface Table {
   totalValue: number;
   totalAmount: number;
   orders?: Order[];
+  qrToken?: string;
 }
 
 export interface MenuItem {

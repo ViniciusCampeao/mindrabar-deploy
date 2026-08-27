@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Logo from "../ui/Logo";
 import {
   AppBar,
@@ -35,18 +35,52 @@ import {
   PeopleAlt as PeopleIcon,
   Brightness4 as DarkModeIcon,
   Brightness7 as LightModeIcon,
+  QrCode2 as QrCode2Icon,
 } from "@mui/icons-material";
+import Badge from "@mui/material/Badge";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../modules/auth";
 import { useThemeMode } from "../../contexts/useThemeMode";
+import { tableSessionService } from "../../api/customer";
+
+interface NavMenuItem {
+  text: string;
+  icon: React.ReactElement;
+  onClick: () => void;
+  badgeCount?: number;
+}
 
 export default function Header() {
   const [anchorEl, setAnchorEl] = useState(null as HTMLElement | null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [pendingQrCount, setPendingQrCount] = useState(0);
   const navigate = useNavigate();
   const { logout, user } = useAuth();
   const theme = useTheme();
   const { mode, toggleTheme } = useThemeMode();
+
+  useEffect(() => {
+    if (!user) return;
+
+    let cancelled = false;
+
+    const fetchPendingCount = async () => {
+      try {
+        const count = await tableSessionService.getPendingCount();
+        if (!cancelled) setPendingQrCount(count);
+      } catch {
+        // Silencioso: o badge apenas não atualiza neste ciclo.
+      }
+    };
+
+    fetchPendingCount();
+    const interval = setInterval(fetchPendingCount, 30000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [user]);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -69,16 +103,22 @@ export default function Header() {
     }
   };
 
-  const getMenuItems = () => {
-    const commonItems = [
+  const getMenuItems = (): NavMenuItem[] => {
+    const commonItems: NavMenuItem[] = [
       {
         text: "Mesas",
         icon: <TableRestaurantIcon />,
         onClick: () => navigate("/tables"),
       },
+      {
+        text: "Pedidos QR",
+        icon: <QrCode2Icon />,
+        onClick: () => navigate("/qr-orders"),
+        badgeCount: pendingQrCount,
+      },
     ];
 
-    const MANAGERItems = [
+    const MANAGERItems: NavMenuItem[] = [
       {
         text: "Dashboard",
         icon: <RestaurantIcon />,
@@ -106,7 +146,7 @@ export default function Header() {
       },
     ];
 
-    const waiterItems = [
+    const waiterItems: NavMenuItem[] = [
       /*{
         text: "Minhas Mesas",
         icon: <TableRestaurantIcon />,
@@ -215,7 +255,11 @@ export default function Header() {
                   },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 40, color: theme.palette.primary.main }}>{item.icon}</ListItemIcon>
+                <ListItemIcon sx={{ minWidth: 40, color: theme.palette.primary.main }}>
+                  <Badge badgeContent={item.badgeCount} color="error" invisible={!item.badgeCount}>
+                    {item.icon}
+                  </Badge>
+                </ListItemIcon>
                 <ListItemText
                   primary={item.text}
                   primaryTypographyProps={{
@@ -327,7 +371,11 @@ export default function Header() {
                 <Button
                   key={item.text}
                   onClick={item.onClick}
-                  startIcon={item.icon}
+                  startIcon={
+                    <Badge badgeContent={item.badgeCount} color="error" invisible={!item.badgeCount}>
+                      {item.icon}
+                    </Badge>
+                  }
                   sx={{
                     py: 1,
                     px: 2,

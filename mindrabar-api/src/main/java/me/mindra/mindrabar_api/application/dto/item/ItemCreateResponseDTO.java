@@ -16,7 +16,7 @@ public record ItemCreateResponseDTO(
     public ItemCreateResponseDTO(Item item) {
         this(
             item.getId(),
-            item.getUser().getId(),
+            item.getUser() != null ? item.getUser().getId() : null,
             item.getOrder().getId(),
             item.getProduct().getId(),
             item.getQuantity(),

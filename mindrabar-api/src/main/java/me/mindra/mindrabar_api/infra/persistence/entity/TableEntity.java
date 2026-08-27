@@ -32,6 +32,9 @@ public class TableEntity {
     @Enumerated(EnumType.STRING)
     private TableStatus status;
 
+    @Column(name = "qr_token")
+    private String qrToken;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -41,12 +44,13 @@ public class TableEntity {
     public TableEntity() {
     }
 
-    public TableEntity(Long id, CompanyEntity company, String name, TableStatus status, LocalDateTime createdAt,
+    public TableEntity(Long id, CompanyEntity company, String name, TableStatus status, String qrToken, LocalDateTime createdAt,
             LocalDateTime updatedAt) {
         this.id = id;
         this.company = company;
         this.name = name;
         this.status = status;
+        this.qrToken = qrToken;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -81,6 +85,14 @@ public class TableEntity {
 
     public void setStatus(TableStatus status) {
         this.status = status;
+    }
+
+    public String getQrToken() {
+        return qrToken;
+    }
+
+    public void setQrToken(String qrToken) {
+        this.qrToken = qrToken;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -39,6 +39,11 @@ public class TableRepositoryImpl implements TableRepository {
     }
 
     @Override
+    public Optional<Table> findByQrToken(String qrToken) {
+        return repository.findByQrToken(qrToken).map(TableMapper::toDomain);
+    }
+
+    @Override
     public List<Table> findByStatus(TableStatus status) {
         return repository.findByStatus(status).stream().map(TableMapper::toDomain).collect(Collectors.toList());
     }

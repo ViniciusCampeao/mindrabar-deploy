@@ -7,12 +7,17 @@ import {
   CardActionArea,
   CardContent,
   Dialog,
+  DialogTitle,
   DialogContent,
+  DialogActions,
+  IconButton,
   Snackbar,
   Alert,
 } from "@mui/material";
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import QrCode2Icon from '@mui/icons-material/QrCode2';
+import QRCode from "qrcode";
 import TablesService from "@/services/Tables/tablesService";
 import OrderList from "../../modules/orders/components/OrderList";
 
@@ -25,6 +30,46 @@ export default function WaiterTablesIndex() {
   const [viewingOrders, setViewingOrders] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [sortOrder, setSortOrder] = React.useState("asc"); // asc ou desc
+  const [qrTable, setQrTable] = React.useState(null);
+  const [qrDataUrl, setQrDataUrl] = React.useState(null as string | null);
+  const [qrGenerating, setQrGenerating] = React.useState(false);
+
+  const openQrDialog = async (table) => {
+    setQrTable(table);
+    setQrDataUrl(null);
+
+    if (!table.qrToken) return;
+
+    try {
+      setQrGenerating(true);
+      const url = `${window.location.origin}/mesa/${table.qrToken}`;
+      const dataUrl = await QRCode.toDataURL(url, {
+        margin: 2,
+        width: 512,
+        color: { dark: "#000000", light: "#FFFFFF" },
+      });
+      setQrDataUrl(dataUrl);
+    } catch (error) {
+      console.error("Erro ao gerar QR Code:", error);
+    } finally {
+      setQrGenerating(false);
+    }
+  };
+
+  const closeQrDialog = () => {
+    setQrTable(null);
+    setQrDataUrl(null);
+  };
+
+  const downloadQrCode = () => {
+    if (!qrDataUrl || !qrTable) return;
+    const link = document.createElement("a");
+    link.href = qrDataUrl;
+    link.download = `mesa-${qrTable.name}-qrcode.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Busca mesas e pedidos abertos
   const fetchTablesWithOrders = async () => {
@@ -226,15 +271,36 @@ export default function WaiterTablesIndex() {
         }}
       >
         {filteredTables.length > 0 ? filteredTables.map(table => (
-          <Card 
-            key={table.id} 
-            sx={{ 
-              borderRadius: 2, 
-              height: "100%", 
+          <Card
+            key={table.id}
+            sx={{
+              position: "relative",
+              borderRadius: 2,
+              height: "100%",
               border: `5px solid ${table.status === "OCCUPIED" ? "#900404" : "#2d7c37"}`,
               transition: 'border-color 0.3s ease'
             }}
           >
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                openQrDialog(table);
+              }}
+              sx={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                zIndex: 1,
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
+                "&:hover": { bgcolor: "action.hover" },
+              }}
+              aria-label="Ver QR Code da mesa"
+            >
+              <QrCode2Icon fontSize="small" />
+            </IconButton>
             <CardActionArea
               onClick={() => {
                 setSelectedTable(table);
@@ -311,6 +377,36 @@ export default function WaiterTablesIndex() {
             />
           )}
         </DialogContent>
+      </Dialog>
+
+      {/* Modal com o QR Code da mesa, para impressão */}
+      <Dialog open={!!qrTable} onClose={closeQrDialog} maxWidth="xs" fullWidth>
+        <DialogTitle>QR Code — {qrTable?.name}</DialogTitle>
+        <DialogContent sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          {qrGenerating ? (
+            <Typography color="text.secondary">Gerando QR Code...</Typography>
+          ) : qrDataUrl ? (
+            <Box
+              component="img"
+              src={qrDataUrl}
+              alt={`QR Code da mesa ${qrTable?.name}`}
+              sx={{ width: "100%", maxWidth: 320, bgcolor: "#FFFFFF", p: 1, borderRadius: 1 }}
+            />
+          ) : (
+            <Typography color="text.secondary">
+              Esta mesa ainda não possui um QR Code disponível.
+            </Typography>
+          )}
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Imprima e deixe na mesa para os clientes fazerem pedidos pelo celular.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeQrDialog}>Fechar</Button>
+          <Button variant="contained" onClick={downloadQrCode} disabled={!qrDataUrl}>
+            Baixar QR Code
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

@@ -1,21 +1,23 @@
 package me.mindra.mindrabar_api.domain.model.table;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import me.mindra.mindrabar_api.domain.model.company.Company;
 import me.mindra.mindrabar_api.exception.ErrorCode;
 import me.mindra.mindrabar_api.exception.MindrabarException;
 
 public class Table {
-    
+
     private Long id;
     private Company company;
     private String name;
     private TableStatus status;
+    private String qrToken;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    
-    public Table(Long id, Company company, String name, TableStatus status, LocalDateTime createdAt,
+
+    public Table(Long id, Company company, String name, TableStatus status, String qrToken, LocalDateTime createdAt,
             LocalDateTime updatedAt) {
 
         if(company == null) {
@@ -29,6 +31,7 @@ public class Table {
         this.company = company;
         this.name = name;
         this.status = status;
+        this.qrToken = qrToken;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -47,6 +50,7 @@ public class Table {
         this.company = company;
         this.name = name;
         this.status = status;
+        this.qrToken = UUID.randomUUID().toString();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -89,6 +93,10 @@ public class Table {
 
     public TableStatus getStatus() {
         return status;
+    }
+
+    public String getQrToken() {
+        return qrToken;
     }
 
     public LocalDateTime getCreatedAt() {

@@ -11,6 +11,7 @@ import me.mindra.mindrabar_api.infra.persistence.entity.TableEntity;
 
 public interface TableJpaRepository extends JpaRepository<TableEntity, Long> {
     Optional<TableEntity> findByName(String name);
+    Optional<TableEntity> findByQrToken(String qrToken);
     List<TableEntity> findByStatus(TableStatus status);
     List<TableEntity> findByCompany(CompanyEntity company);
 }
