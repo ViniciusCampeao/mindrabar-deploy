@@ -5,6 +5,7 @@ import java.util.List;
 
 import me.mindra.mindrabar_api.domain.model.company.Company;
 import me.mindra.mindrabar_api.domain.model.product.Product;
+import me.mindra.mindrabar_api.domain.model.product.ProductCategory;
 import me.mindra.mindrabar_api.domain.repository.ProductRepository;
 import me.mindra.mindrabar_api.exception.ErrorCode;
 import me.mindra.mindrabar_api.exception.MindrabarException;
@@ -61,6 +62,14 @@ public class ProductService {
 
     public void deleteById(Long id) {
         productRepository.deleteById(id);
+    }
+
+    public Product updateCategory(Long productId, ProductCategory category) {
+
+        Product product = findById(productId);
+
+        product.updateCategory(category);
+        return productRepository.save(product);
     }
 
     public Product findById(Long productId) {

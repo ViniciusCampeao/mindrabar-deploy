@@ -15,6 +15,14 @@ export interface MenuItem {
   price: number;
   costPrice?: number;
   stockQuantity?: number;
+  categoryId?: number | null;
+  categoryName?: string | null;
+}
+
+export interface ProductCategory {
+  id: number;
+  companyId: number;
+  name: string;
 }
 
 // Interface para itens de pedido usados apenas na UI (não no backend)

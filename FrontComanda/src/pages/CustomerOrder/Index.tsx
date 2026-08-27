@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Box,
@@ -17,15 +17,25 @@ import {
   CircularProgress,
   Divider,
   Container,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { customerOrderService } from '../../api/customer';
 import type {
   PublicTableInfo,
   PublicMenuProduct,
   BillResponse,
+  SessionItemStatus,
 } from '../../api/customer/customerOrder.interface';
 import { isValidBrazilianPhone, formatPhoneInput } from './phoneValidation';
 
@@ -33,6 +43,60 @@ const currency = (value: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
 
 const sessionStorageKey = (qrToken: string) => `qr_session_${qrToken}`;
+
+const SESSION_ITEMS_POLL_INTERVAL_MS = 10000;
+const PREPARING_TIMEOUT_MS = 15 * 60 * 1000;
+const UNCATEGORIZED_LABEL = 'Outros';
+
+interface MenuGroup {
+  key: string;
+  label: string;
+  products: PublicMenuProduct[];
+}
+
+function groupMenuByCategory(menu: PublicMenuProduct[]): MenuGroup[] {
+  const groups: MenuGroup[] = [];
+  const groupIndexByKey = new Map<string, number>();
+
+  for (const product of menu) {
+    const key = product.categoryId != null ? `cat-${product.categoryId}` : '__uncategorized__';
+    const label = product.categoryName ?? UNCATEGORIZED_LABEL;
+
+    let index = groupIndexByKey.get(key);
+    if (index === undefined) {
+      index = groups.length;
+      groupIndexByKey.set(key, index);
+      groups.push({ key, label, products: [] });
+    }
+    groups[index].products.push(product);
+  }
+
+  const uncategorizedIndex = groups.findIndex(g => g.key === '__uncategorized__');
+  if (uncategorizedIndex !== -1 && uncategorizedIndex !== groups.length - 1) {
+    const [uncategorized] = groups.splice(uncategorizedIndex, 1);
+    groups.push(uncategorized);
+  }
+
+  return groups;
+}
+
+function computeBannerMessage(items: SessionItemStatus[]): string | null {
+  const now = Date.now();
+
+  const preparingActive = items.some(
+    item => item.status === 'PREPARING' && now - new Date(item.updatedAt).getTime() < PREPARING_TIMEOUT_MS
+  );
+  if (preparingActive) {
+    return 'Seu pedido já está sendo preparado!';
+  }
+
+  const hasPending = items.some(item => item.status === 'PENDING');
+  if (hasPending) {
+    return 'Seu pedido já está na fila!';
+  }
+
+  return null;
+}
 
 export default function CustomerOrderPage() {
   const { qrToken } = useParams<{ qrToken: string }>();
@@ -57,6 +121,11 @@ export default function CustomerOrderPage() {
 
   const [bill, setBill] = useState<BillResponse | null>(null);
   const [billLoading, setBillLoading] = useState(false);
+
+  const [sessionItems, setSessionItems] = useState<SessionItemStatus[]>([]);
+
+  const [pendingItem, setPendingItem] = useState<{ product: PublicMenuProduct; quantity: number } | null>(null);
+  const [placingOrder, setPlacingOrder] = useState(false);
 
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
@@ -114,6 +183,7 @@ export default function CustomerOrderPage() {
     setSessionToken(null);
     setCustomerName(null);
     setBill(null);
+    setSessionItems([]);
     setSnackbar({
       open: true,
       message: 'Sua sessão foi encerrada (a mesa foi fechada). Preencha seus dados novamente para pedir.',
@@ -138,12 +208,29 @@ export default function CustomerOrderPage() {
     }
   }, [sessionToken, handleSessionExpired]);
 
+  const loadSessionItems = useCallback(async () => {
+    if (!sessionToken) return;
+    try {
+      const items = await customerOrderService.getSessionItems(sessionToken);
+      setSessionItems(items);
+    } catch {
+      // silencioso: o aviso só deixa de atualizar neste ciclo, tenta de novo no próximo poll
+    }
+  }, [sessionToken]);
+
   useEffect(() => {
     if (sessionToken) {
       loadMenu();
       loadBill();
     }
   }, [sessionToken, loadMenu, loadBill]);
+
+  useEffect(() => {
+    if (!sessionToken) return;
+    loadSessionItems();
+    const interval = setInterval(loadSessionItems, SESSION_ITEMS_POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [sessionToken, loadSessionItems]);
 
   const handleStartSession = async () => {
     if (!qrToken) return;
@@ -186,22 +273,36 @@ export default function CustomerOrderPage() {
     });
   };
 
-  const handleAddItem = async (product: PublicMenuProduct) => {
-    if (!sessionToken) return;
+  const handleRequestAddItem = (product: PublicMenuProduct) => {
     const quantity = quantities[product.id] ?? 1;
+    setPendingItem({ product, quantity });
+  };
+
+  const handleConfirmAddItem = async () => {
+    if (!sessionToken || !pendingItem) return;
+    const { product, quantity } = pendingItem;
     try {
+      setPlacingOrder(true);
       await customerOrderService.placeItem(sessionToken, { productId: product.id, quantity });
       setSnackbar({ open: true, message: `${product.name} adicionado ao pedido.`, severity: 'success' });
       setQuantities(prev => ({ ...prev, [product.id]: 1 }));
+      loadSessionItems();
     } catch (error: any) {
       if (error?.response?.data?.code === 'INVALID_STATUS_TRANSITION') {
+        setPendingItem(null);
         handleSessionExpired();
         return;
       }
       const message = error?.response?.data?.message || 'Não foi possível adicionar este item.';
       setSnackbar({ open: true, message, severity: 'error' });
+    } finally {
+      setPlacingOrder(false);
+      setPendingItem(null);
     }
   };
+
+  const menuGroups = useMemo(() => groupMenuByCategory(menu), [menu]);
+  const bannerMessage = useMemo(() => computeBannerMessage(sessionItems), [sessionItems]);
 
   if (loadingTable) {
     return (
@@ -225,6 +326,38 @@ export default function CustomerOrderPage() {
       </Box>
     );
   }
+
+  const renderProductCard = (product: PublicMenuProduct) => (
+    <Card key={product.id} variant="outlined">
+      <CardContent>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Box>
+            <Typography fontWeight={600}>{product.name}</Typography>
+            <Typography color="text.secondary">{currency(product.salePrice)}</Typography>
+          </Box>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <IconButton size="small" onClick={() => changeQuantity(product.id, -1)}>
+              <RemoveIcon fontSize="small" />
+            </IconButton>
+            <Typography sx={{ minWidth: 20, textAlign: 'center' }}>
+              {quantities[product.id] ?? 1}
+            </Typography>
+            <IconButton size="small" onClick={() => changeQuantity(product.id, 1)}>
+              <AddIcon fontSize="small" />
+            </IconButton>
+          </Stack>
+        </Stack>
+        <Button
+          fullWidth
+          variant="contained"
+          sx={{ mt: 1.5 }}
+          onClick={() => handleRequestAddItem(product)}
+        >
+          Adicionar
+        </Button>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: 6 }}>
@@ -273,9 +406,15 @@ export default function CustomerOrderPage() {
           </Paper>
         ) : (
           <>
-            <Typography sx={{ mb: 1 }} color="text.secondary">
-              Olá, {customerName}! Seu pedido será confirmado por um garçom em instantes.
+            <Typography sx={{ mb: bannerMessage ? 1 : 2 }} color="text.secondary">
+              Olá, {customerName}!
             </Typography>
+
+            {bannerMessage && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {bannerMessage}
+              </Alert>
+            )}
 
             <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }} variant="fullWidth">
               <Tab label="Cardápio" />
@@ -288,45 +427,32 @@ export default function CustomerOrderPage() {
                   <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
                     <CircularProgress size={28} />
                   </Box>
-                ) : (
+                ) : menu.length === 0 ? (
+                  <Typography color="text.secondary" textAlign="center" sx={{ py: 4 }}>
+                    Nenhum produto disponível no momento.
+                  </Typography>
+                ) : menuGroups.length <= 1 ? (
                   <Stack spacing={2}>
-                    {menu.map(product => (
-                      <Card key={product.id} variant="outlined">
-                        <CardContent>
-                          <Stack direction="row" justifyContent="space-between" alignItems="center">
-                            <Box>
-                              <Typography fontWeight={600}>{product.name}</Typography>
-                              <Typography color="text.secondary">{currency(product.salePrice)}</Typography>
-                            </Box>
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                              <IconButton size="small" onClick={() => changeQuantity(product.id, -1)}>
-                                <RemoveIcon fontSize="small" />
-                              </IconButton>
-                              <Typography sx={{ minWidth: 20, textAlign: 'center' }}>
-                                {quantities[product.id] ?? 1}
-                              </Typography>
-                              <IconButton size="small" onClick={() => changeQuantity(product.id, 1)}>
-                                <AddIcon fontSize="small" />
-                              </IconButton>
-                            </Stack>
-                          </Stack>
-                          <Button
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 1.5 }}
-                            onClick={() => handleAddItem(product)}
-                          >
-                            Adicionar
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                    {menu.length === 0 && (
-                      <Typography color="text.secondary" textAlign="center" sx={{ py: 4 }}>
-                        Nenhum produto disponível no momento.
-                      </Typography>
-                    )}
+                    {menu.map(renderProductCard)}
                   </Stack>
+                ) : (
+                  <Box>
+                    {menuGroups.map((group, index) => (
+                      <Accordion key={group.key} defaultExpanded={index === 0} disableGutters>
+                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                          <Stack direction="row" alignItems="center" spacing={1}>
+                            <Typography fontWeight={600}>{group.label}</Typography>
+                            <Chip label={group.products.length} size="small" />
+                          </Stack>
+                        </AccordionSummary>
+                        <AccordionDetails>
+                          <Stack spacing={2}>
+                            {group.products.map(renderProductCard)}
+                          </Stack>
+                        </AccordionDetails>
+                      </Accordion>
+                    ))}
+                  </Box>
                 )}
               </Box>
             )}
@@ -378,6 +504,40 @@ export default function CustomerOrderPage() {
           </>
         )}
       </Container>
+
+      <Dialog open={!!pendingItem} onClose={() => (placingOrder ? null : setPendingItem(null))} maxWidth="xs" fullWidth>
+        <DialogTitle>Confirmar pedido</DialogTitle>
+        <DialogContent>
+          {pendingItem && (
+            <Stack spacing={1} sx={{ pt: 1 }}>
+              <Typography fontWeight={600}>{pendingItem.product.name}</Typography>
+              <Stack direction="row" justifyContent="space-between">
+                <Typography color="text.secondary">Quantidade</Typography>
+                <Typography>{pendingItem.quantity}</Typography>
+              </Stack>
+              <Stack direction="row" justifyContent="space-between">
+                <Typography color="text.secondary">Preço unitário</Typography>
+                <Typography>{currency(pendingItem.product.salePrice)}</Typography>
+              </Stack>
+              <Divider />
+              <Stack direction="row" justifyContent="space-between">
+                <Typography fontWeight={700}>Subtotal</Typography>
+                <Typography fontWeight={700}>
+                  {currency(pendingItem.product.salePrice * pendingItem.quantity)}
+                </Typography>
+              </Stack>
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setPendingItem(null)} disabled={placingOrder}>
+            Cancelar
+          </Button>
+          <Button variant="contained" onClick={handleConfirmAddItem} disabled={placingOrder}>
+            {placingOrder ? 'Enviando...' : 'Confirmar pedido'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Snackbar
         open={snackbar.open}

@@ -183,7 +183,9 @@ public class ManageTableSessionUseCaseImpl implements ManageTableSessionUseCase 
             product.getName(),
             product.getCostPrice(),
             product.getSalePrice(),
-            product.getStockQuantity()
+            product.getStockQuantity(),
+            product.getCategory() != null ? product.getCategory().getId() : null,
+            product.getCategory() != null ? product.getCategory().getName() : null
         );
     }
 

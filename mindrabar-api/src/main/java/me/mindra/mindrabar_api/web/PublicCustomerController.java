@@ -13,6 +13,7 @@ import me.mindra.mindrabar_api.application.dto.customer.PublicTableInfoDTO;
 import me.mindra.mindrabar_api.application.dto.customer.TableSessionStartRequestDTO;
 import me.mindra.mindrabar_api.application.dto.customer.TableSessionStartResponseDTO;
 import me.mindra.mindrabar_api.application.dto.item.ItemCreateResponseDTO;
+import me.mindra.mindrabar_api.application.dto.item.SessionItemStatusDTO;
 import me.mindra.mindrabar_api.application.dto.product.ProductResponseDTO;
 import me.mindra.mindrabar_api.application.port.in.ManageItemUseCase;
 import me.mindra.mindrabar_api.application.port.in.ManageTableSessionUseCase;
@@ -60,5 +61,11 @@ public class PublicCustomerController {
     @GetMapping("/sessions/{sessionToken}/bill")
     public BillResponseDTO getBill(@PathVariable String sessionToken) {
         return manageTableSessionUseCase.getBillBySessionToken(sessionToken);
+    }
+
+    @Operation(summary = "Consultar o status dos itens pedidos nesta sessão de cliente")
+    @GetMapping("/sessions/{sessionToken}/items")
+    public List<SessionItemStatusDTO> getSessionItems(@PathVariable String sessionToken) {
+        return manageItemUseCase.findItemsBySession(sessionToken);
     }
 }

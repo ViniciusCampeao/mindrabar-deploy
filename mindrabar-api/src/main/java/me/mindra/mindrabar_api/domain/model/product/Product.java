@@ -15,11 +15,12 @@ public class Product {
     private BigDecimal costPrice;
     private BigDecimal salePrice;
     private int stockQuantity;
+    private ProductCategory category;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public Product(Long id, Company company, String name, BigDecimal costPrice, BigDecimal salePrice, int stockQuantity,
-            LocalDateTime createdAt, LocalDateTime updatedAt) {
+            ProductCategory category, LocalDateTime createdAt, LocalDateTime updatedAt) {
         if(company == null) {
             throw new MindrabarException(ErrorCode.REQUIRED_FIELD, "Empresa não pode ser nula");
         }
@@ -39,6 +40,7 @@ public class Product {
         this.costPrice = costPrice;
         this.salePrice = salePrice;
         this.stockQuantity = stockQuantity;
+        this.category = category;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -116,7 +118,11 @@ public class Product {
         }
         this.salePrice = salePrice;
     }
-    
+
+    public void updateCategory(ProductCategory category) {
+        this.category = category;
+    }
+
     public Long getId() {
         return id;
     }
@@ -139,6 +145,10 @@ public class Product {
 
     public int getStockQuantity() {
         return stockQuantity;
+    }
+
+    public ProductCategory getCategory() {
+        return category;
     }
 
     public LocalDateTime getCreatedAt() {

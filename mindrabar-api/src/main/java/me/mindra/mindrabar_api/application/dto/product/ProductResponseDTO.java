@@ -8,7 +8,9 @@ public record ProductResponseDTO(
     String name,
     BigDecimal costPrice,
     BigDecimal salePrice,
-    int stockQuantity
+    int stockQuantity,
+    Long categoryId,
+    String categoryName
 ) {
-    
+
 }

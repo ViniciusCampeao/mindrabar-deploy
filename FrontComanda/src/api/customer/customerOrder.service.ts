@@ -7,6 +7,7 @@ import type {
   CustomerOrderItemRequest,
   ItemCreateResponse,
   BillResponse,
+  SessionItemStatus,
 } from './customerOrder.interface';
 
 /**
@@ -36,6 +37,11 @@ export const customerOrderService = {
 
   async getBill(sessionToken: string): Promise<BillResponse> {
     const response = await httpClient.get<BillResponse>(`/public/sessions/${sessionToken}/bill`);
+    return response.data;
+  },
+
+  async getSessionItems(sessionToken: string): Promise<SessionItemStatus[]> {
+    const response = await httpClient.get<SessionItemStatus[]>(`/public/sessions/${sessionToken}/items`);
     return response.data;
   },
 };

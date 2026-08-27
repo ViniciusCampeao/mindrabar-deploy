@@ -1,6 +1,5 @@
 package me.mindra.mindrabar_api.infra.persistence.entity;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -13,8 +12,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "products")
-public class ProductEntity {
+@Table(name = "product_categories")
+public class ProductCategoryEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,38 +26,20 @@ public class ProductEntity {
     @Column(name = "name")
     private String name;
 
-    @Column(name = "cost_price", precision = 10, scale = 2)
-    private BigDecimal costPrice;
-
-    @Column(name = "sale_price", precision = 10, scale = 2)
-    private BigDecimal salePrice;
-
-    @Column(name = "stock_quantity")
-    private int stockQuantity;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id", referencedColumnName = "id")
-    private ProductCategoryEntity category;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public ProductEntity() {
+    public ProductCategoryEntity() {
 
     }
 
-    public ProductEntity(Long id, CompanyEntity company, String name, BigDecimal costPrice, BigDecimal salePrice,
-            int stockQuantity, ProductCategoryEntity category, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public ProductCategoryEntity(Long id, CompanyEntity company, String name, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.company = company;
         this.name = name;
-        this.costPrice = costPrice;
-        this.salePrice = salePrice;
-        this.stockQuantity = stockQuantity;
-        this.category = category;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -87,38 +68,6 @@ public class ProductEntity {
         this.name = name;
     }
 
-    public BigDecimal getCostPrice() {
-        return costPrice;
-    }
-
-    public void setCostPrice(BigDecimal costPrice) {
-        this.costPrice = costPrice;
-    }
-
-    public BigDecimal getSalePrice() {
-        return salePrice;
-    }
-
-    public void setSalePrice(BigDecimal salePrice) {
-        this.salePrice = salePrice;
-    }
-
-    public int getStockQuantity() {
-        return stockQuantity;
-    }
-
-    public void setStockQuantity(int stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
-
-    public ProductCategoryEntity getCategory() {
-        return category;
-    }
-
-    public void setCategory(ProductCategoryEntity category) {
-        this.category = category;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -134,6 +83,4 @@ public class ProductEntity {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
-
-    
 }

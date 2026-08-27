@@ -58,6 +58,8 @@ public class SecurityConfig {
                 .requestMatchers("/company/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/product", "/product/**").hasAnyRole("ADMIN", "MANAGER", "WAITER")
                 .requestMatchers("/product", "/product/**").hasAnyRole("ADMIN", "MANAGER")
+                .requestMatchers(HttpMethod.GET, "/product-category", "/product-category/**").hasAnyRole("ADMIN", "MANAGER", "WAITER")
+                .requestMatchers("/product-category", "/product-category/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/table", "/table/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers(HttpMethod.DELETE, "/order/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers(HttpMethod.POST, "/order/*/payment").hasAnyRole("ADMIN", "MANAGER")

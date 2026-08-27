@@ -92,4 +92,12 @@ public class ItemRepositoryImpl implements ItemRepository {
             .map(ItemMapper::toDomain)
             .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Item> findByTableSessionId(Long tableSessionId) {
+        return repository.findByTableSession_Id(tableSessionId)
+            .stream()
+            .map(ItemMapper::toDomain)
+            .collect(Collectors.toList());
+    }
 }

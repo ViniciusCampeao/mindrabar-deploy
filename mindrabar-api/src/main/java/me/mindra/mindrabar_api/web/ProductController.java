@@ -105,6 +105,15 @@ public class ProductController {
         return manageProductUseCase.updateSalePrice(dto);
     }
 
+    @Operation(summary = "Atribuir ou remover a categoria de um produto")
+    @PatchMapping("/{id}/category")
+    public ProductResponseDTO updateCategory(
+            @PathVariable Long id,
+            @RequestBody ProductCategoryAssignRequestDTO request) {
+
+        return manageProductUseCase.updateCategory(id, request);
+    }
+
     @Operation(summary = "Criar um novo produto")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
