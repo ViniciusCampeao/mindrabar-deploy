@@ -24,7 +24,6 @@ import {
 } from "@mui/material";
 import {
   Menu as MenuIcon,
-  AccountCircle,
   Restaurant as RestaurantIcon,
   TableRestaurant as TableRestaurantIcon,
   Receipt as ReceiptIcon,
@@ -138,11 +137,6 @@ export default function Header() {
         text: "Gerenciar Usuários",
         icon: <PeopleIcon />,
         onClick: () => navigate("/user-management"),
-      },
-      {
-        text: "Novo Usuário",
-        icon: <AccountCircle />,
-        onClick: () => navigate("/register"),
       },
     ];
 

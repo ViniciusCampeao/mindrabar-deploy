@@ -9,7 +9,6 @@ import {
 } from "./components/auth";
 import { MainLayout } from "./layouts";
 import Login from "./pages/Login/Index";
-import Register from "./pages/Register/Index";
 import Dashboard from "./pages/Dashboard";
 import WaiterTables from "./pages/WaiterTables/Index";
 import WaiterOrders from "./pages/WaiterOrders/Index";
@@ -47,16 +46,6 @@ function App() {
                 <ProtectedRoute>
                   <MainLayout>
                     <RoleBasedRedirect />
-                  </MainLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <ProtectedRoute allowedRoles={["MANAGER"]}>
-                  <MainLayout>
-                    <Register />
                   </MainLayout>
                 </ProtectedRoute>
               }
