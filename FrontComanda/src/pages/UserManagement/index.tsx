@@ -46,12 +46,19 @@ export default function UserManagementIndex() {
   const [selectedUser, setSelectedUser] = useState(null as User | null);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [editForm, setEditForm] = useState({
     username: "",
     password: "",
     role: ""
   } as UserUpdateData);
+  const [createForm, setCreateForm] = useState({
+    username: "",
+    password: "",
+    role: "WAITER"
+  });
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -93,6 +100,43 @@ export default function UserManagementIndex() {
 
     fetchUsers();
   }, [user, navigate, fetchUsers]);
+
+  const handleOpenCreateDialog = () => {
+    setCreateForm({ username: "", password: "", role: "WAITER" });
+    setOpenCreateDialog(true);
+  };
+
+  const handleCreateSubmit = async () => {
+    if (!user?.companyId) return;
+
+    if (createForm.username.trim().length < 3) {
+      showSnackbar("O nome de usuário deve ter no mínimo 3 caracteres", "error");
+      return;
+    }
+    if (createForm.password.length < 6) {
+      showSnackbar("A senha deve ter no mínimo 6 caracteres", "error");
+      return;
+    }
+
+    try {
+      setCreating(true);
+      await userService.createUser({
+        username: createForm.username.trim(),
+        password: createForm.password,
+        role: createForm.role as User["role"],
+        companyId: user.companyId,
+        email: `${createForm.username.trim()}@comanda.com`,
+      });
+      setOpenCreateDialog(false);
+      showSnackbar("Usuário criado com sucesso", "success");
+      fetchUsers();
+    } catch (error: any) {
+      const message = error?.response?.data?.message || "Erro ao criar usuário";
+      showSnackbar(message, "error");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const handleEditClick = (selectedUser: User) => {
     setSelectedUser(selectedUser);
@@ -211,6 +255,12 @@ export default function UserManagementIndex() {
         >
           Atualizar
         </Button>
+        <Button
+          variant="contained"
+          onClick={handleOpenCreateDialog}
+        >
+          Novo usuário
+        </Button>
       </Box>
 
       {/* Tabela de usuários */}
@@ -320,6 +370,65 @@ export default function UserManagementIndex() {
           <Button onClick={() => setOpenEditDialog(false)}>Cancelar</Button>
           <Button onClick={handleEditSubmit} variant="contained">
             Salvar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diálogo de Criação */}
+      <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)}>
+        <DialogTitle>Novo Usuário</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nome de Usuário"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={createForm.username}
+            onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
+          />
+          <TextField
+            margin="dense"
+            label="Senha"
+            type={showPassword ? "text" : "password"}
+            fullWidth
+            variant="outlined"
+            value={createForm.password}
+            onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleTogglePasswordVisibility}
+                  edge="end"
+                >
+                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                </IconButton>
+              )
+            }}
+          />
+          <FormControl fullWidth margin="dense">
+            <InputLabel id="create-role-label">Função</InputLabel>
+            <Select
+              labelId="create-role-label"
+              id="create-role"
+              value={createForm.role}
+              label="Função"
+              onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
+            >
+              <MenuItem value="WAITER">Garçom</MenuItem>
+              <MenuItem value="MANAGER">Gerente</MenuItem>
+              {user?.role === "ADMIN" && (
+                <MenuItem value="ADMIN">Administrador</MenuItem>
+              )}
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCreateDialog(false)} disabled={creating}>Cancelar</Button>
+          <Button onClick={handleCreateSubmit} variant="contained" disabled={creating}>
+            {creating ? "Criando..." : "Criar"}
           </Button>
         </DialogActions>
       </Dialog>
