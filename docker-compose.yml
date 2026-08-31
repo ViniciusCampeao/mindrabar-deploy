@@ -16,7 +16,7 @@ services:
       dockerfile: Dockerfile
       args:
         # Esta URL fica gravada no bundle do front no BUILD.
-        # \u00c9 o dom\u00ednio p\u00fablico que o Cloudflare Tunnel vai expor pro back.
+        # É o domínio público que o Cloudflare Tunnel vai expor pro back.
         VITE_API_URL: https://api-mindrabar.kernel-cloud.online
     container_name: mindrabar-front
     restart: unless-stopped

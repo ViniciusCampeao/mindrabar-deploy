@@ -5,7 +5,7 @@
  * para facilitar manutenção e evitar duplicação
  */
 
-// Base URL — vem do build (.env / VITE_API_URL). Fallback pro dom\u00ednio antigo.
+// Base URL — vem do build (.env / VITE_API_URL). Fallback pro domínio antigo.
 export const API_BASE_URL = (import.meta.env.VITE_API_URL as string) || 'https://api.mindra.me';
 
 // Autenticação e Usuários
